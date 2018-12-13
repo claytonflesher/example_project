@@ -1,0 +1,64 @@
+#%RAML 1.0
+version: v1
+title: American Flights API
+
+types:
+  Flight: !include exchange_modules/68ef9520-24e9-4cf2-b2f5-620025690913/training-american-flight-data-type/1.0.1/AmericanFlightDataType.raml
+  ErrorType:
+    type: object
+    properties: 
+      message:
+        type: string
+        description: Error message
+    example: {"message": "Bad Request"}
+
+traits:
+  client-id-required:
+    headers:
+      client_id:
+        type: string
+      client_secret:
+        type: string
+
+/flights:
+  get:
+    is: [client-id-required]
+    queryParameters: 
+      destination:
+        required: false
+        enum:
+          - SFO
+          - LAX
+          - CLE
+    responses: 
+      200:
+        body: 
+          application/json:
+            type: Flight[]
+            example: !include exchange_modules/68ef9520-24e9-4cf2-b2f5-620025690913/training-american-flights-example/1.0.1/AmericanFlightsExample.raml
+  post:
+    is: [client-id-required]
+    body: 
+      application/json:
+        type: Flight
+        example: !include examples/AmericanFlightNoIDExample.raml
+    responses: 
+      201:
+        body: 
+          application/json:
+            example: |
+              {"message": "Flight created (but not really)"}
+      400:
+        body: 
+          application/json:
+            type: ErrorType
+
+  /{ID}:
+    get:
+      is: [client-id-required]
+      responses: 
+        200:
+          body: 
+            application/json:
+              type: Flight
+              example: !include examples/AmericanFlightExample.raml
